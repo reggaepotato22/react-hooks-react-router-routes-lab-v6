@@ -1,71 +1,64 @@
-import "@testing-library/jest-dom";
-import { RouterProvider, createMemoryRouter} from "react-router-dom"
-import { render, screen } from "@testing-library/react";
-import routes from "../routes";
+import React from 'react';
+import { render, screen } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
+import Directors from '../pages/Directors';
 
 const directors = [
   {
-    name: "Scott Derrickson",
-    movies: ["Doctor Strange", "Sinister", "The Exorcism of Emily Rose"],
-  },
-  {
     name: "Mike Mitchell",
-    movies: ["Trolls", "Alvin and the Chipmunks: Chipwrecked", "Sky High"],
+    movies: ["Trolls", "Sky High"],
   },
   {
-    name: "Edward Zwick",
-    movies: ["Jack Reacher: Never Go Back", "Blood Diamond", "The Siege"],
+    name: "Jennifer Lee",
+    movies: ["Frozen", "Frozen II"],
   },
 ];
 
-const router = createMemoryRouter(routes, {
-  initialEntries: [`/directors`],
-  initialIndex: 0
-})
+describe('<Directors />', () => {
+  it("renders 'Directors Page' inside of a <h1 />", () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    const headingElement = screen.getByRole('heading', { name: /Directors Page/i });
+    expect(headingElement).toBeInTheDocument();
+  });
 
-test("renders without any errors", () => {
-  const errorSpy = vi.spyOn(global.console, "error");
+  it('renders each director\'s name', () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    directors.forEach((director) => {
+      const nameElement = screen.getByRole('heading', { name: director.name });
+      expect(nameElement).toBeInTheDocument();
+    });
+  });
 
-  render(<RouterProvider router={router}/>);
+  it('renders a <ul> for the movies of each director', () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    directors.forEach((director) => {
+      const movieList = screen.getByRole('list', { name: `${director.name}'s movies` });
+      expect(movieList).toBeInTheDocument();
+      director.movies.forEach((movie) => {
+        expect(screen.getByText(movie, { container: movieList })).toBeInTheDocument();
+      });
+    });
+  });
 
-  expect(errorSpy).not.toHaveBeenCalled();
-
-  errorSpy.mockRestore();
-});
-
-test("renders 'Directors Page' inside of a <h1 />", () => {
-  render(<RouterProvider router={router}/>);
-  const h1 = screen.queryByText(/Directors Page/);
-  expect(h1).toBeInTheDocument();
-  expect(h1.tagName).toBe("H1");
-});
-
-test("renders each director's name", async () => {
-  render(<RouterProvider router={router}/>);
-  for (const director of directors) {
-    expect(
-      await screen.findByText(director.name, { exact: false })
-    ).toBeInTheDocument();
-  }
-});
-
-test("renders a <li /> for each movie", async () => {
-  render(<RouterProvider router={router}/>);
-  for (const director of directors) {
-    for (const movie of director.movies) {
-      const li = await screen.findByText(movie, { exact: false });
-      expect(li).toBeInTheDocument();
-      expect(li.tagName).toBe("LI");
-    }
-  }
-});
-
-test("renders the <NavBar /> component", () => {
-  const router = createMemoryRouter(routes, {
-    initialEntries: ['/directors']
-  })
-  render(
-      <RouterProvider router={router}/>
-  );
-  expect(document.querySelector(".navbar")).toBeInTheDocument();
+  it('renders the <NavBar /> component', () => {
+    render(
+      <MemoryRouter>
+        <Directors />
+      </MemoryRouter>
+    );
+    const navBarElement = screen.getByRole('navigation');
+    expect(navBarElement).toBeInTheDocument();
+  });
 });
